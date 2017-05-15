@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Night Life</title>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet">  
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">  
+	<link href="../main.css"  type="text/css" rel="stylesheet">
+	<script src="../main.js" type="text/javascript" charset="utf-8" async defer></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+ <div class = "div-container">
+  
+  <div class = "row">
+    <div class = "col-sm-3 "></div>
+    <div class = "col-sm-6 ">
+      <div class = "input-form">
+    <div class = "form-group" >
+      <p class = "header-main text-center">GOING OUT TONIGHT?</p>
+      <div class="input-group">
+      <input name="location" id="location" type="text" class="form-control" placeholder="Search for...">
+      <span class="input-group-btn">
+        <button class="btn btn-secondary" type="button" id="btn-search" onclick="getBar()">Go!</button>
+      </span>
+    </div>
+    </div>
+    <div class = "login-div text-center">
+      <% if(user) { %>
+      <!-- dang nhap roi thi lam eo gi???? -->
+      <% } else { %>
+      <div class="btn-group">
+		     <a href = "/login">
+		      <button class='btn btn-info ' href='' style="width:12em"> Sign in with Twitter</button>
+        </a>
+      </div>	
+      <% } %>
+      
+    </div>	
+    </div>
+    </div>
+    <div class = "col-sm-3 ">
+        <% include ../views/header.ejs %>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div id="div-result" class="col-md-10">
+      
+    </div>
+  </div>
+  
+ 
+  
+  </div>
+</div>
+<script >
+  $(function() {
+       
+      if (typeof(Storage) !== "undefined") {
+        console.log(sessionStorage);
+        if (sessionStorage.search) {
+          $('#location').val(sessionStorage.getItem("search"));
+          $.ajax({
+            type: 'GET',
+            url: '/getBar?loc='+sessionStorage.getItem("search"),
+            success: function(data) {
+               if(data=="error"){
+                alert ("Can't get data from that location");
+              } else {
+                console.log(data);
+                var listBar = data.location[0].listBar;
+                var locationId = data.location[0].locationId;
+                var user = data.user ;
+                console.log(user);
+              $('#div-result').html("");
+              for(i=0;i<listBar.length;i++){
+                
+                addHTML(listBar[i],locationId,user);
+              }
+              }
+            }
+        });
+        }
+      } else {
+          console.log("Sorry, your browser does not support Web Storage...");
+      }
+    });
+  
+  
+  
+    function getBar(){
+    
+     var location =  $("#location").val();           
+     alert("click getBar in:" + location);
+     console.log(location);
+      if (typeof(Storage) !== "undefined") {
+          // Store
+          
+          sessionStorage.setItem("search", location);
+          
+      } else {
+          console.log("Sorry, your browser does not support Web Storage...");
+      }
+    $.ajax({
+            type: 'GET',
+            url: '/getBar?loc='+location,
+            success: function(data) {
+               if(data=="error"){
+                alert ("Can't get data from that location");
+              } else {
+                console.log(data);
+                var listBar = data.location[0].listBar;
+                var locationId = data.location[0].locationId;
+                var user = data.user ;
+                console.log(user);
+              $('#div-result').html("");
+              for(i=0;i<listBar.length;i++){
+                
+                addHTML(listBar[i],locationId,user);
+              }
+              }
+            }
+            
+        });
+    }
+    
+  function addHTML(data,locationId,user){
+        var img = data.img;
+        var title = data.title;
+        var description = data.description;
+        var id = data.id;
+        var numberGoing = data.listUser.length;
+        var html ="";
+        
+        html += '<div class="bar">';
+        html += '<div class="row">';
+        html +=  '<div class="col-md-1" >';
+        html +=   '<img class="img-bar" src = "'+img+'" >' ;
+        html +=  '</div>';
+        html +=  '<div class="col-md-1">';
+        html +=  '</div>';
+        html +=  '<div class="col-md-10">';
+        html +=    '<div class="div-title">';
+        html +=      title;
+        html +=      '<div class="div-going">';
+        
+        
+        // check for user going or don't go
+        if (user=="") {
+          html += '<a href="/going?id=' + id + '?loc='+locationId+'?check=false">';
+          html +=      '<button class="button btn-going"   id="btn-going-'+id+'" > GOING </button>';
+        }
+        else {
+          
+          var length = data.listUser.length;
+          var check = false // false= not yet gone, true = went
+          if(length>0) {
+          for(var i=0;i<data.listUser.length;i++){
+            if (data.listUser[i].userId==user.id) {
+              check = true;
+              break;
+            }
+          }
+          }
+          if(check==true) {
+            html += '<a href="/going?id=' + id + '?loc='+locationId+'?check=true">';
+            html +=      '<button class="button btn-going"   id="btn-going-'+id+'" > Don\'t Go </button>';
+          } else {
+            html += '<a href="/going?id=' + id + '?loc='+locationId+'?check=false">';
+            html +=      '<button class="button btn-going"   id="btn-going-'+id+'" > Going </button>';
+          }
+          
+        }
+        html += '</a>'
+        html +=      '<span id="number-going"> '+numberGoing+' GOING </span>';
+        html +=      '</div>';
+        html +=      '</div>';
+        html +=    '<div class="description">';
+        html +=      description;
+        html +=    '</div>';
+        html +=  '</div>';
+        html +='</div>';
+        html +='</div>';
+        
+        
+        $('#div-result').append(html);
+  }
+</script>
+</body>
