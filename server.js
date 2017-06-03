@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 passport.use(new Strategy({
   consumerKey: "NBjIJS0yrGBiyiL2kkfDioeIz",
   consumerSecret: "15G6kEy31ipkWqWLXIyUYmyqTNkqY0PHk2yMlbgaGrwoDevdJ4",
-  callbackURL: 'https://dynamicweb-namhoang18595.c9users.io/login/twitter/return'
+  callbackURL: 'https://life-night-namhoang.herokuapp.com/login/twitter/return'
 },
                           function(token, tokenSecret, profile, cb) {
   // In this example, the user's Twitter profile is supplied as the user
